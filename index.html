@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PassForge — Password Generator</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="card">
+  <header class="card-head">
+    <h1>PassForge</h1>
+    <p>Generate strong, random passwords instantly.</p>
+  </header>
+
+  <div class="output">
+    <input type="text" id="password" readonly value="" spellcheck="false">
+    <button class="copy" id="copyBtn" aria-label="Copy password">📋</button>
+    <button class="refresh" id="refreshBtn" aria-label="Regenerate">🔁</button>
+  </div>
+  <p class="copied" id="copiedMsg"></p>
+
+  <div class="strength">
+    <div class="strength-head">
+      <span id="strengthLabel">Strength</span>
+      <span id="strengthText">—</span>
+    </div>
+    <div class="strength-track">
+      <div class="strength-fill" id="strengthFill"></div>
+    </div>
+    <p class="crack" id="crackTime"></p>
+  </div>
+
+  <div class="length">
+    <div class="length-head">
+      <label for="lengthRange">Length</label>
+      <input type="number" id="lengthInput" min="4" max="64" value="16">
+    </div>
+    <input type="range" id="lengthRange" min="4" max="64" value="16">
+  </div>
+
+  <div class="options">
+    <label class="opt"><input type="checkbox" id="optUpper" checked><span>Uppercase <em>A-Z</em></span></label>
+    <label class="opt"><input type="checkbox" id="optLower" checked><span>Lowercase <em>a-z</em></span></label>
+    <label class="opt"><input type="checkbox" id="optNumbers" checked><span>Numbers <em>0-9</em></span></label>
+    <label class="opt"><input type="checkbox" id="optSymbols" checked><span>Symbols <em>!@#</em></span></label>
+    <label class="opt"><input type="checkbox" id="optNoAmbig"><span>Exclude ambiguous <em>il1O0</em></span></label>
+  </div>
+
+  <button class="generate" id="generateBtn">Generate password</button>
+
+  <section class="history">
+    <div class="history-head">
+      <h2>Recent</h2>
+      <button id="clearHistory">Clear</button>
+    </div>
+    <ul id="historyList"></ul>
+    <p class="empty" id="historyEmpty">Generated passwords will appear here.</p>
+  </section>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
