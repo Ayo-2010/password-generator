@@ -31,10 +31,15 @@ const opts = {
 
 let history = [];
 
-function randomInt(max) {
+function randomIndex(max) {
+  const limit = Math.floor(4294967296 / max) * max;
   const array = new Uint32Array(1);
-  crypto.getRandomValues(array);
-  return array[0] % max;
+  let value;
+  do {
+    crypto.getRandomValues(array);
+    value = array[0];
+  } while (value >= limit);
+  return value % max;
 }
 
 function buildPool() {
@@ -59,10 +64,8 @@ function generate() {
   }
 
   let result = '';
-  const values = new Uint32Array(length);
-  crypto.getRandomValues(values);
   for (let i = 0; i < length; i++) {
-    result += pool[values[i] % pool.length];
+    result += pool[randomIndex(pool.length)];
   }
 
   passwordEl.value = result;
@@ -99,26 +102,40 @@ function describeCrackTime(entropy) {
   const guessesPerSecond = 1e10;
   const seconds = Math.pow(2, entropy) / guessesPerSecond;
 
-  const units = [
-    ['second', 60],
-    ['minute', 60],
-    ['hour', 24],
-    ['day', 365],
-    ['year', 1000],
+  if (seconds < 1) return 'instantly';
+
+  const steps = [
+    { label: 'second', size: 1 },
+    { label: 'minute', size: 60 },
+    { label: 'hour', size: 3600 },
+    { label: 'day', size: 86400 },
+    { label: 'year', size: 31536000 },
   ];
 
-  let value = seconds;
-  let unit = 'second';
-  for (const [name, factor] of units) {
-    if (value < 60) { unit = name; break; }
-    value /= 60;
-    unit = name === 'second' ? 'minute' : name;
+  let chosen = steps[0];
+  for (const step of steps) {
+    if (seconds >= step.size) chosen = step;
   }
 
-  if (seconds < 1) return 'instantly';
-  if (value >= 1e9) return 'billions of years';
+  const value = seconds / chosen.size;
 
-  return `${Math.round(value)} ${unit}${Math.round(value) === 1 ? '' : 's'}`;
+  if (chosen.label === 'year' && value >= 1000) {
+    if (value >= 1e15) return 'longer than the age of the universe';
+    const units = [
+      { label: 'thousand years', size: 1e3 },
+      { label: 'million years', size: 1e6 },
+      { label: 'billion years', size: 1e9 },
+      { label: 'trillion years', size: 1e12 },
+    ];
+    let unit = units[0];
+    for (const candidate of units) {
+      if (value >= candidate.size) unit = candidate;
+    }
+    return `${Math.round(value / unit.size).toLocaleString('en-US')} ${unit.label}`;
+  }
+
+  const rounded = Math.round(value);
+  return `${rounded.toLocaleString('en-US')} ${chosen.label}${rounded === 1 ? '' : 's'}`;
 }
 
 function addToHistory(password) {
@@ -134,8 +151,12 @@ function renderHistory() {
 
   history.forEach((pw) => {
     const li = document.createElement('li');
-    li.innerHTML = `<span>${pw}</span><small>tap to copy</small>`;
-    li.addEventListener('click', () => copyText(pw, li.querySelector('small')));
+    const span = document.createElement('span');
+    span.textContent = pw;
+    const hint = document.createElement('small');
+    hint.textContent = 'tap to copy';
+    li.append(span, hint);
+    li.addEventListener('click', () => copyText(pw, hint));
     historyList.appendChild(li);
   });
 }
